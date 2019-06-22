@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,21 +34,57 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public void insert(Seller obj) {
+        PreparedStatement ps = null;
+
+        try {
+            ps = conn.prepareStatement(
+                    "INSERT INTO seller "
+                    + "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+                    + "VALUES "
+                    + "(?, ?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+
+            ps.setString(1, obj.getName());
+            ps.setString(2, obj.getEmail());
+            ps.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+            ps.setDouble(4, obj.getBaseSalary());
+            ps.setInt(5, obj.getDepartment().getId());
+
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+
+                if (rs.next()) {
+                    int id = rs.getInt(1);
+                    obj.setId(id);
+                }
+                DB.closeResultSet(rs);
+            } else {
+                throw new DbException("Unexpected erros! No rows Affected!");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(ps);
+        }
+    }
+
+    @Override
+    public void update(Seller obj
+    ) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void update(Seller obj) {
+    public void deleteById(Integer id
+    ) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void deleteById(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Seller findById(Integer id) {
+    public Seller findById(Integer id
+    ) {
         PreparedStatement ps = null;
         ResultSet rs = null;
 
@@ -78,7 +115,7 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public List<Seller> findAll() {
-          PreparedStatement ps = null;
+        PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
@@ -90,18 +127,18 @@ public class SellerDaoJDBC implements SellerDao {
             );
 
             rs = ps.executeQuery();
-            
-            List <Seller> list = new ArrayList<>();
-            Map <Integer, Department> map = new HashMap<>();
 
-            while(rs.next()) {
+            List<Seller> list = new ArrayList<>();
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next()) {
                 Department dep = map.get(rs.getInt("DepartmentId"));
-                
-                if(dep == null){
+
+                if (dep == null) {
                     dep = instantiateDepartment(rs);
                     map.put(rs.getInt("DepartmentId"), dep);
                 }
-                
+
                 Seller obj = instantiateSeller(rs, dep);
                 list.add(obj);
             }
@@ -115,7 +152,8 @@ public class SellerDaoJDBC implements SellerDao {
     }
 
     @Override
-    public List<Seller> findByDepartment(Department department) {
+    public List<Seller> findByDepartment(Department department
+    ) {
         PreparedStatement ps = null;
         ResultSet rs = null;
 
@@ -130,18 +168,18 @@ public class SellerDaoJDBC implements SellerDao {
 
             ps.setInt(1, department.getId());
             rs = ps.executeQuery();
-            
-            List <Seller> list = new ArrayList<>();
-            Map <Integer, Department> map = new HashMap<>();
 
-            while(rs.next()) {
+            List<Seller> list = new ArrayList<>();
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next()) {
                 Department dep = map.get(rs.getInt("DepartmentId"));
-                
-                if(dep == null){
+
+                if (dep == null) {
                     dep = instantiateDepartment(rs);
                     map.put(rs.getInt("DepartmentId"), dep);
                 }
-                
+
                 Seller obj = instantiateSeller(rs, dep);
                 list.add(obj);
             }
