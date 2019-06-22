@@ -5,7 +5,8 @@
  */
 package model.dao;
 
-import model.doa.impl.SellerDaoJDBc;
+import db.DB;
+import model.doa.impl.SellerDaoJDBC;
 
 /**
  *
@@ -13,7 +14,7 @@ import model.doa.impl.SellerDaoJDBc;
  */
 public class DaoFactory {
     
-    private static SellerDao createSellerDao(){
-        return new SellerDaoJDBc();
+    public static SellerDao createSellerDao(){
+        return new SellerDaoJDBC(DB.getConnection());
     }
 }
