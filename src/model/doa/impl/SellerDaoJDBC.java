@@ -104,7 +104,11 @@ public class SellerDaoJDBC implements SellerDao {
             ps = conn.prepareStatement("DELETE FROM seller WHERE Id = ?");
             
             ps.setInt(1, id);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            
+            if(rows == 0){
+                throw new DbException("Unexpected erros! No rows Affected!");
+            }
         }
         catch (SQLException e){
             throw new DbException(e.getMessage());
